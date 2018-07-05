@@ -12,6 +12,7 @@ import org.matsim.core.gbl.MatsimRandom;
 
 import com.google.inject.Provides;
 
+import nyu.matsim.bikesharing.events.BikeEventsHandler;
 import nyu.matsim.bikesharing.events.BikeshareDemand;
 import nyu.matsim.bikesharing.infrastructure.BikeshareService;
 import nyu.matsim.bikesharing.infrastructure.BikesharingStation;
@@ -26,6 +27,7 @@ public class BikeshareModule extends AbstractModule {
 		addControlerListenerBinding().to(BikeshareLoader.class);
 		addControlerListenerBinding().to(BikeshareDemandWriter.class);
 		addEventHandlerBinding().to(BikeshareDemand.class);
+		addEventHandlerBinding().to(BikeEventsHandler.class);
 		bind(BikeshareService.class).asEagerSingleton();
 		bind(BikeshareDepartureHandler.class).asEagerSingleton();
 		bind(BikeshareDemand.class).asEagerSingleton();
