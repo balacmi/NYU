@@ -66,8 +66,18 @@ public class BikeshareDepartureHandler implements DepartureHandler {
 				
 				double beelineDistanceFactorBike = pcrcg.getBeelineDistanceFactors().get("bike");
 				double speedBike = pcrcg.getTeleportedModeSpeeds().get("bike");
-				double travelTime = CoordUtils.calcEuclideanDistance(bikeCoord,
-						network.getLinks().get(leg.getRoute().getEndLinkId()).getCoord()) * beelineDistanceFactorBike / speedBike;
+				
+				Coord parkingCoord = this.bikeshareService.reserveClosestParkingSpot(network.getLinks().get(leg.getRoute().getEndLinkId()).getCoord(), 
+						agent.getId());
+				
+				if (parkingCoord == null) {
+					//or we can replace this leg with a walk leg
+					agent.setStateToAbort(now);
+					return true;
+				}
+				
+				double travelTime = CoordUtils.calcEuclideanDistance(bikeCoord,	parkingCoord)
+						* beelineDistanceFactorBike / speedBike;
 				leg.setTravelTime(travelTime);
 				leg.getRoute().setTravelTime(travelTime);
 				leg.getRoute().setStartLinkId(NetworkUtils.getNearestLinkExactly(network, bikeCoord).getId());
