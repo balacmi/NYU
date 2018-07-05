@@ -33,7 +33,7 @@ public class BikeshareDemandWriter implements IterationEndsListener {
 				this.controler.getControlerIO().getIterationFilename(event.getIteration(), "BS.txt"));
 		try {
 			outLink.write(
-					"personID,carsharingType,startTime,endTIme,startLink,pickupLink,dropoffLink,endLink,startCoordX,startCoordY,"
+					"personID,startTime,endTIme,startLink,pickupLink,dropoffLink,endLink,startCoordX,startCoordY,"
 							+ "pickupCoordX,pickupCoordY,dropoffCoordX,dropoffCoordY,endCoordX,endCoordY,distance,"
 							+ "inVehicleTime,accessTime,egressTime,vehicleID");
 			outLink.newLine();
