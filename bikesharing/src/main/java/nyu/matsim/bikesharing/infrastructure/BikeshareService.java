@@ -1,5 +1,6 @@
 package nyu.matsim.bikesharing.infrastructure;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,11 +14,11 @@ import org.matsim.core.utils.collections.QuadTree;
 
 import com.google.inject.Inject;
 
-public class BikeshareService {	
+public class BikeshareService {
 
 	@Inject
 	private Network network;
-	
+
 	private QuadTree<BikesharingStation> quadTreeAvailBikesStations;
 	private QuadTree<BikesharingStation> quadTreeAvailParkStations;
 	private Map<Id<BikesharingVehicle>, Coord> mapAvailableBikes;
@@ -25,7 +26,7 @@ public class BikeshareService {
 	private Map<Id<BikesharingVehicle>, BikesharingVehicle> mapBikesharingVehicles;
 	private Map<Id<Person>, Id<BikesharingVehicle>> mapPersonBike;
 	private Map<Id<Person>, Id<BikesharingStation>> mapPersonParkingStation;
-	
+
 	public Id<BikesharingVehicle> getAndRemoveClosestBike(Coord coord, Id<Person> id) {
 
 		synchronized (this.quadTreeAvailBikesStations) {
@@ -35,7 +36,8 @@ public class BikeshareService {
 			else {
 				BikesharingVehicle vehicle = station.getAvailableBikes().remove(0);
 				if (station.getAvailableBikes().size() == 0)
-					this.quadTreeAvailBikesStations.remove(station.getCoord().getX(), station.getCoord().getY(), station);
+					this.quadTreeAvailBikesStations.remove(station.getCoord().getX(), station.getCoord().getY(),
+							station);
 				this.mapPersonBike.put(id, vehicle.getBikeId());
 				return vehicle.getBikeId();
 			}
@@ -56,7 +58,6 @@ public class BikeshareService {
 
 			BikesharingStation station = this.mapBikesharingStations.get(stationId);
 			station.addBike(bike);
-
 			if (station.getAvailableBikes().size() == 1) {
 				this.quadTreeAvailBikesStations.put(station.getCoord().getX(), station.getCoord().getY(), station);
 			}
@@ -113,20 +114,24 @@ public class BikeshareService {
 		this.mapBikesharingVehicles = new ConcurrentHashMap<>();
 		this.mapPersonBike = new ConcurrentHashMap<>();
 		this.mapPersonParkingStation = new ConcurrentHashMap<>();
-		
 		for (BikesharingStation station : stations) {
+			List<BikesharingVehicle> bikes = new ArrayList<>(station.getAvailableBikes());
+			BikesharingStation newStation = new BikesharingStation(station.getStationId(), 
+					station.getParkingSlots(), bikes, station.getCoord());
 			if (station.getAvailableBikes().size() > 0)
-				this.quadTreeAvailBikesStations.put(station.getCoord().getX(), station.getCoord().getY(), station);
+				this.quadTreeAvailBikesStations.put(newStation.getCoord().getX(), newStation.getCoord().getY(), newStation);
 			
-			if (station.getAvailableBikes().size() > station.getParkingSlots())
-				this.quadTreeAvailParkStations.put(station.getCoord().getX(), station.getCoord().getY(), station);
+			if (station.getAvailableBikes().size() < station.getParkingSlots())
+				this.quadTreeAvailParkStations.put(newStation.getCoord().getX(), newStation.getCoord().getY(), newStation);
 			
-			this.mapBikesharingStations.put(station.getStationId(), station);
+			this.mapBikesharingStations.put(newStation.getStationId(), newStation);
 			
-			for (BikesharingVehicle bike : station.getAvailableBikes()) {
-				this.mapAvailableBikes.put(bike.getBikeId(), station.getCoord());
-				this.mapBikesharingVehicles.put(bike.getBikeId(), bike);				
+			for (BikesharingVehicle bike : newStation.getAvailableBikes()) {
+				this.mapAvailableBikes.put(bike.getBikeId(), newStation.getCoord());
+				this.mapBikesharingVehicles.put(bike.getBikeId(), bike);	
 			}
 		}
 	}
+
+	
 }
