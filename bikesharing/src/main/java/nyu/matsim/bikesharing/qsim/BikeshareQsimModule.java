@@ -18,6 +18,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import com.google.inject.Provides;
 
 public class BikeshareQsimModule extends AbstractModule {
+	
 	@Provides
 	public Collection<AbstractQSimPlugin> provideQSimPlugins(Config config, QNetworkFactory networkFactory) {
 		final Collection<AbstractQSimPlugin> plugins = new ArrayList<>();
