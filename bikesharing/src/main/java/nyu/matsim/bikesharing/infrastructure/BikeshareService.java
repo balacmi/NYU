@@ -14,7 +14,7 @@ import org.matsim.core.utils.collections.QuadTree;
 
 import com.google.inject.Inject;
 
-public class BikeshareService {
+public class BikeshareService implements BikeshareServiceInterface {
 
 	@Inject
 	private Network network;
@@ -27,6 +27,7 @@ public class BikeshareService {
 	private Map<Id<Person>, Id<BikesharingVehicle>> mapPersonBike;
 	private Map<Id<Person>, Id<BikesharingStation>> mapPersonParkingStation;
 
+	@Override
 	public Id<BikesharingVehicle> getAndRemoveClosestBike(Coord coord, Id<Person> id) {
 
 		synchronized (this.quadTreeAvailBikesStations) {
@@ -45,14 +46,17 @@ public class BikeshareService {
 
 	}
 
+	@Override
 	public Map<Id<BikesharingVehicle>, Coord> getBikeCoordMap() {
 		return this.mapAvailableBikes;
 	}
 
+	@Override
 	public Map<Id<BikesharingVehicle>, BikesharingVehicle> getMapBikesharingVehicles() {
 		return mapBikesharingVehicles;
 	}
 
+	@Override
 	public void addBikeToStation(Id<BikesharingStation> stationId, BikesharingVehicle bike) {
 		synchronized (this.quadTreeAvailBikesStations) {
 
@@ -64,6 +68,7 @@ public class BikeshareService {
 		}
 	}
 
+	@Override
 	public Coord reserveClosestParkingSpot(Coord coord, Id<Person> personId) {
 
 		synchronized (this.quadTreeAvailParkStations) {
@@ -79,14 +84,17 @@ public class BikeshareService {
 		}
 	}
 
+	@Override
 	public Id<BikesharingVehicle> getRentedBike(Id<Person> personId) {
 		return this.mapPersonBike.get(personId);
 	}
 
+	@Override
 	public Id<BikesharingStation> getParkingStation(Id<Person> personId) {
 		return this.mapPersonParkingStation.get(personId);
 	}
 
+	@Override
 	public void setUp(List<BikesharingStation> stations) {
 		double minx = (1.0D / 0.0D);
 		double miny = (1.0D / 0.0D);

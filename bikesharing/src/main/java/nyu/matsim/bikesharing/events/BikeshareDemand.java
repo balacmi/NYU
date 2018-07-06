@@ -15,7 +15,7 @@ import org.matsim.api.core.v01.population.Person;
 
 import com.google.inject.Inject;
 
-import nyu.matsim.bikesharing.infrastructure.BikeshareService;
+import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
 import nyu.matsim.bikesharing.utils.RentalInfo;
 
 public class BikeshareDemand implements PersonDepartureEventHandler, PersonArrivalEventHandler {
@@ -24,7 +24,7 @@ public class BikeshareDemand implements PersonDepartureEventHandler, PersonArriv
 	private Network network;
 
 	@Inject
-	private BikeshareService bikeshareFleet;
+	private BikeshareServiceInterface bikeshareFleet;
 	Map<Id<Person>, ArrayList<RentalInfo>> bikeRentals = new ConcurrentHashMap<>();
 	Map<Id<Person>, RentalInfo> currentRental = new ConcurrentHashMap<>();
 

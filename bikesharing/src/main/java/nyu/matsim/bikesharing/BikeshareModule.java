@@ -11,14 +11,17 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.gbl.MatsimRandom;
 
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 
 import nyu.matsim.bikesharing.events.BikeEventsHandler;
 import nyu.matsim.bikesharing.events.BikeshareDemand;
 import nyu.matsim.bikesharing.infrastructure.BikeshareService;
+import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
 import nyu.matsim.bikesharing.infrastructure.BikesharingStation;
 import nyu.matsim.bikesharing.infrastructure.BikesharingVehicle;
 import nyu.matsim.bikesharing.listeners.BikeshareDemandWriter;
 import nyu.matsim.bikesharing.qsim.BikeshareDepartureHandler;
+import nyu.matsim.bikesharing.router.BikeshareRoutingModule;
 
 public class BikeshareModule extends AbstractModule {
 
@@ -28,12 +31,14 @@ public class BikeshareModule extends AbstractModule {
 		addControlerListenerBinding().to(BikeshareDemandWriter.class);
 		addEventHandlerBinding().to(BikeshareDemand.class);
 		addEventHandlerBinding().to(BikeEventsHandler.class);
-		bind(BikeshareService.class).asEagerSingleton();
+		bind(BikeshareServiceInterface.class).to(BikeshareService.class).asEagerSingleton();;
 		bind(BikeshareDepartureHandler.class).asEagerSingleton();
 		bind(BikeshareDemand.class).asEagerSingleton();
+		addRoutingModuleBinding("bikeshare").to(BikeshareRoutingModule.class);
 	}
 
 	@Provides
+	@Singleton
 	public List<BikesharingStation> provideBikehsareStations(Network network) {
 
 		Link[] links = network.getLinks().values().toArray(new Link[network.getLinks().values().size()]);

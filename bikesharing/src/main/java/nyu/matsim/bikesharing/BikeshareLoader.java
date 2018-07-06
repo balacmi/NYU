@@ -7,13 +7,13 @@ import org.matsim.core.controler.listener.BeforeMobsimListener;
 
 import com.google.inject.Inject;
 
-import nyu.matsim.bikesharing.infrastructure.BikeshareService;
+import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
 import nyu.matsim.bikesharing.infrastructure.BikesharingStation;
 
 public class BikeshareLoader implements BeforeMobsimListener {
 
 	@Inject
-	private BikeshareService service;
+	private BikeshareServiceInterface service;
 
 	@Inject
 	private List<BikesharingStation> stations;

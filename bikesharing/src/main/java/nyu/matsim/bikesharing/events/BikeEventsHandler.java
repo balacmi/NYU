@@ -7,14 +7,14 @@ import org.matsim.api.core.v01.population.Person;
 
 import com.google.inject.Inject;
 
-import nyu.matsim.bikesharing.infrastructure.BikeshareService;
+import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
 import nyu.matsim.bikesharing.infrastructure.BikesharingStation;
 import nyu.matsim.bikesharing.infrastructure.BikesharingVehicle;
 
 public class BikeEventsHandler implements PersonArrivalEventHandler {
 
 	@Inject
-	private BikeshareService bikeService;
+	private BikeshareServiceInterface bikeService;
 
 	@Override
 	public void handleEvent(PersonArrivalEvent event) {

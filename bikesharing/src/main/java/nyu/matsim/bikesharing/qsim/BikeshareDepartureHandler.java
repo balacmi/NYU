@@ -16,19 +16,20 @@ import org.matsim.core.utils.geometry.CoordUtils;
 
 import com.google.inject.Inject;
 
-import nyu.matsim.bikesharing.infrastructure.BikeshareService;
+import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
 import nyu.matsim.bikesharing.infrastructure.BikesharingVehicle;
 
 public class BikeshareDepartureHandler implements DepartureHandler {
 
 	@Inject
-	private BikeshareService bikeshareService;
+	private BikeshareServiceInterface bikeshareService;
 
 	@Inject
 	private Network network;
 
 	@Inject
 	private PlansCalcRouteConfigGroup pcrcg;
+	
 	@Override
 	public boolean handleDeparture(double now, MobsimAgent agent, Id<Link> linkId) {
 		if (agent instanceof PlanAgent) {
@@ -81,6 +82,7 @@ public class BikeshareDepartureHandler implements DepartureHandler {
 				leg.setTravelTime(travelTime);
 				leg.getRoute().setTravelTime(travelTime);
 				leg.getRoute().setStartLinkId(NetworkUtils.getNearestLinkExactly(network, bikeCoord).getId());
+				//TODO: egress times
 				egressLeg.setTravelTime(0.0);
 				egressLeg.getRoute().setTravelTime(0.0);
 
