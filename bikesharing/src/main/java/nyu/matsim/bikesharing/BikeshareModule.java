@@ -22,6 +22,7 @@ import nyu.matsim.bikesharing.infrastructure.BikesharingVehicle;
 import nyu.matsim.bikesharing.listeners.BikeshareDemandWriter;
 import nyu.matsim.bikesharing.qsim.BikeshareDepartureHandler;
 import nyu.matsim.bikesharing.router.BikeshareRoutingModule;
+import nyu.matsim.bikesharing.scoring.BikesharingScoringFunctionFactory;
 
 public class BikeshareModule extends AbstractModule {
 
@@ -35,6 +36,7 @@ public class BikeshareModule extends AbstractModule {
 		bind(BikeshareDepartureHandler.class).asEagerSingleton();
 		bind(BikeshareDemand.class).asEagerSingleton();
 		addRoutingModuleBinding("bikeshare").to(BikeshareRoutingModule.class);
+		bindScoringFunctionFactory().to(BikesharingScoringFunctionFactory.class).asEagerSingleton();
 	}
 
 	@Provides
