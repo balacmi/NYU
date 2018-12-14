@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -21,6 +23,8 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.router.RoutingModule;
+import org.matsim.core.router.TeleportationRoutingModule;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.facilities.ActivityFacilities;
@@ -31,20 +35,25 @@ import ch.ethz.matsim.baseline_scenario.transit.connection.DefaultTransitConnect
 import ch.ethz.matsim.baseline_scenario.transit.routing.DefaultEnrichedTransitRouter;
 import ch.ethz.matsim.baseline_scenario.transit.routing.EnrichedTransitRoute;
 import ch.ethz.matsim.baseline_scenario.zurich.cutter.utils.DefaultDepartureFinder;
-import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorFactory;
+import ch.sbb.matsim.routing.pt.raptor.DefaultRaptorIntermodalAccessEgress;
+import ch.sbb.matsim.routing.pt.raptor.DefaultRaptorParametersForPerson;
+import ch.sbb.matsim.routing.pt.raptor.LeastCostRaptorRouteSelector;
+import ch.sbb.matsim.routing.pt.raptor.RaptorUtils;
+import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptor;
+import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorData;
 
 /**
  * Hello world!
  *
  */
 public class Router extends Thread {
-	private SwissRailRaptorFactory factory;
+	private SwissRailRaptor raptor;
 	private Set<Data> result;
 	private String s;
 	private Scenario scenario;
 
-	public Router(SwissRailRaptorFactory factory, Set<Data> r, Scenario scenario) {
-		this.factory = factory;
+	public Router(SwissRailRaptor raptor, Set<Data> r, Scenario scenario) {
+		this.raptor = raptor;
 		this.result = r;
 		this.scenario = scenario;
 	}
@@ -61,10 +70,11 @@ public class Router extends Thread {
 
 		DefaultTransitConnectionFinder connectionFinder = new DefaultTransitConnectionFinder(
 				new DefaultDepartureFinder());
-		DefaultEnrichedTransitRouter router = new DefaultEnrichedTransitRouter(factory.get(),
-				scenario.getTransitSchedule(), connectionFinder, scenario.getNetwork(), 1.3, 0.0);
+		DefaultEnrichedTransitRouter router = new DefaultEnrichedTransitRouter(raptor, scenario.getTransitSchedule(),
+				connectionFinder, scenario.getNetwork(), 1.3, 0.0);
 
 		String[] arr = s.split(",");
+		System.out.println(s);
 		Coord coordStart = new Coord(Double.parseDouble(arr[6]), Double.parseDouble(arr[7]));
 		Link lStart = NetworkUtils.getNearestLink(scenario.getNetwork(), coordStart);
 
@@ -118,7 +128,17 @@ public class Router extends Thread {
 		routeConfigGroup.getModeRoutingParams().get("walk").setBeelineDistanceFactor(1.25);
 		routeConfigGroup.getModeRoutingParams().get("walk").setTeleportedModeSpeed(1.11 / 0.3048);
 		((PlanCalcScoreConfigGroup) config.getModule("planCalcScore")).setUtilityOfLineSwitch(-0.0D);
-
+		PlanCalcScoreConfigGroup.ModeParams accessWalk = new PlanCalcScoreConfigGroup.ModeParams("access_walk");
+		accessWalk.setMarginalUtilityOfTraveling(6.0);
+		config.planCalcScore().addModeParams(accessWalk);
+		// this should amke sure that router delivers a pt route instead of the pure
+		// walk route
+		PlanCalcScoreConfigGroup.ModeParams transitWalk = new PlanCalcScoreConfigGroup.ModeParams("transit_walk");
+		transitWalk.setMarginalUtilityOfTraveling(600.0);
+		config.planCalcScore().addModeParams(transitWalk);
+		PlanCalcScoreConfigGroup.ModeParams egressWalk = new PlanCalcScoreConfigGroup.ModeParams("egress_walk");
+		egressWalk.setMarginalUtilityOfTraveling(6.0);
+		config.planCalcScore().addModeParams(egressWalk);
 		config.transit().setTransitScheduleFile(args[2]);
 
 		// config.transit().setVehiclesFile("C:\\Users\\balacm\\Downloads\\vehicle.xml");
@@ -130,20 +150,21 @@ public class Router extends Thread {
 		// config.transitRouter().setAdditionalTransferTime(60.0);
 		final Scenario scenario = ScenarioUtils.loadScenario(config);
 
-		SwissRailRaptorFactory factory = new SwissRailRaptorFactory(scenario.getTransitSchedule(), config);
-
-		// DefaultTransitConnectionFinder connectionFinder = new
-		// DefaultTransitConnectionFinder(new DefaultDepartureFinder());
-		// DefaultEnrichedTransitRouter router = new
-		// DefaultEnrichedTransitRouter(factory.get(), scenario.getTransitSchedule(),
-		// connectionFinder, scenario.getNetwork(), 1.3, 0.0);
+		Map<String, RoutingModule> routingModules = new HashMap<>();
+		routingModules.put(TransportMode.walk, new TeleportationRoutingModule(TransportMode.walk,
+				scenario.getPopulation().getFactory(), 1.1 / 0.3048, 1.25));
+		SwissRailRaptorData data = SwissRailRaptorData.create(scenario.getTransitSchedule(),
+				RaptorUtils.createStaticConfig(config), scenario.getNetwork());
+		SwissRailRaptor raptor = new SwissRailRaptor(data, new DefaultRaptorParametersForPerson(scenario.getConfig()),
+				new LeastCostRaptorRouteSelector(), new DefaultRaptorIntermodalAccessEgress(), null, null,
+				routingModules);
 
 		List<Thread> threads = new LinkedList<>();
 		Set<Data> res = Collections.synchronizedSet(new HashSet<Data>());
 
 		for (int i = 0; i < Integer.parseInt(args[3]); i++) {
 			threads.add(new Thread(() -> {
-				Router router = new Router(factory, res, scenario);
+				Router router = new Router(raptor, res, scenario);
 
 				while (true) {
 					String s2 = null;
