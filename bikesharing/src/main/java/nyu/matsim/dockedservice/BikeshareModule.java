@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing;
+package nyu.matsim.dockedservice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,17 +14,17 @@ import org.matsim.core.router.MainModeIdentifier;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
-import nyu.matsim.bikesharing.events.BikeEventsHandler;
-import nyu.matsim.bikesharing.events.BikeshareDemand;
-import nyu.matsim.bikesharing.infrastructure.BikeshareService;
-import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
-import nyu.matsim.bikesharing.infrastructure.BikesharingStation;
-import nyu.matsim.bikesharing.infrastructure.BikesharingVehicle;
-import nyu.matsim.bikesharing.listeners.BikeshareDemandWriter;
-import nyu.matsim.bikesharing.qsim.BikeshareDepartureHandler;
-import nyu.matsim.bikesharing.router.BikeshareRoutingModule;
-import nyu.matsim.bikesharing.router.BikesharingMainModeIdentifier;
-import nyu.matsim.bikesharing.scoring.BikesharingScoringFunctionFactory;
+import nyu.matsim.dockedservice.events.BikeEventsHandler;
+import nyu.matsim.dockedservice.events.BikeshareDemand;
+import nyu.matsim.dockedservice.infrastructure.BikeshareService;
+import nyu.matsim.dockedservice.infrastructure.BikeshareServiceInterface;
+import nyu.matsim.dockedservice.infrastructure.BikesharingStation;
+import nyu.matsim.dockedservice.infrastructure.BikesharingVehicle;
+import nyu.matsim.dockedservice.listeners.BikeshareDemandWriter;
+import nyu.matsim.dockedservice.qsim.BikeshareDepartureHandler;
+import nyu.matsim.dockedservice.router.BikeshareRoutingModule;
+import nyu.matsim.dockedservice.router.BikesharingMainModeIdentifier;
+import nyu.matsim.dockedservice.scoring.BikesharingScoringFunctionFactory;
 
 public class BikeshareModule extends AbstractModule {
 

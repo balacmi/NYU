@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing.qsim;
+package nyu.matsim.dockedservice.qsim;
 
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 

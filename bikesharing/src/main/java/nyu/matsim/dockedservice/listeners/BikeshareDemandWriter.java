@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing.listeners;
+package nyu.matsim.dockedservice.listeners;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -14,8 +14,8 @@ import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.utils.io.IOUtils;
 
-import nyu.matsim.bikesharing.events.BikeshareDemand;
-import nyu.matsim.bikesharing.utils.RentalInfo;
+import nyu.matsim.dockedservice.events.BikeshareDemand;
+import nyu.matsim.dockedservice.utils.RentalInfo;
 
 
 public class BikeshareDemandWriter implements IterationEndsListener {

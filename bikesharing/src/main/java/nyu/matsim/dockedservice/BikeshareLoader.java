@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing;
+package nyu.matsim.dockedservice;
 
 import java.util.List;
 
@@ -7,8 +7,8 @@ import org.matsim.core.controler.listener.BeforeMobsimListener;
 
 import com.google.inject.Inject;
 
-import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
-import nyu.matsim.bikesharing.infrastructure.BikesharingStation;
+import nyu.matsim.dockedservice.infrastructure.BikeshareServiceInterface;
+import nyu.matsim.dockedservice.infrastructure.BikesharingStation;
 
 public class BikeshareLoader implements BeforeMobsimListener {
 

@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing.events;
+package nyu.matsim.dockedservice.events;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.PersonArrivalEvent;
@@ -7,9 +7,9 @@ import org.matsim.api.core.v01.population.Person;
 
 import com.google.inject.Inject;
 
-import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
-import nyu.matsim.bikesharing.infrastructure.BikesharingStation;
-import nyu.matsim.bikesharing.infrastructure.BikesharingVehicle;
+import nyu.matsim.dockedservice.infrastructure.BikeshareServiceInterface;
+import nyu.matsim.dockedservice.infrastructure.BikesharingStation;
+import nyu.matsim.dockedservice.infrastructure.BikesharingVehicle;
 
 public class BikeEventsHandler implements PersonArrivalEventHandler {
 

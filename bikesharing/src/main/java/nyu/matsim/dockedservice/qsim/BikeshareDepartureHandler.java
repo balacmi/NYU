@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing.qsim;
+package nyu.matsim.dockedservice.qsim;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -16,8 +16,8 @@ import org.matsim.core.utils.geometry.CoordUtils;
 
 import com.google.inject.Inject;
 
-import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
-import nyu.matsim.bikesharing.infrastructure.BikesharingVehicle;
+import nyu.matsim.dockedservice.infrastructure.BikeshareServiceInterface;
+import nyu.matsim.dockedservice.infrastructure.BikesharingVehicle;
 
 public class BikeshareDepartureHandler implements DepartureHandler {
 

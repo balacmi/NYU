@@ -1,10 +1,10 @@
-package nyu.matsim.bikesharing.utils;
+package nyu.matsim.dockedservice.utils;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 
-import nyu.matsim.bikesharing.infrastructure.BikesharingVehicle;
+import nyu.matsim.dockedservice.infrastructure.BikesharingVehicle;
 /** 
  * @author balac
  */

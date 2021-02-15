@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing;
+package nyu.matsim.dockedservice;
 
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -7,8 +7,8 @@ import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.components.QSimComponentsConfig;
 import org.matsim.core.mobsim.qsim.components.QSimComponentsConfigurator;
 
-import nyu.matsim.bikesharing.config.BikesharingConfigGroup;
-import nyu.matsim.bikesharing.qsim.BikeshareQsimModule;
+import nyu.matsim.dockedservice.config.BikesharingConfigGroup;
+import nyu.matsim.dockedservice.qsim.BikeshareQsimModule;
 
 public class RunBikesharing {
 	public static void main(String[] args) {

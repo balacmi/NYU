@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing.config;
+package nyu.matsim.dockedservice.config;
 
 import org.matsim.core.config.ReflectiveConfigGroup;
 

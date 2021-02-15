@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing.infrastructure;
+package nyu.matsim.dockedservice.infrastructure;
 
 import java.util.List;
 import java.util.Map;

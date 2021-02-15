@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing.events;
+package nyu.matsim.dockedservice.events;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -15,8 +15,8 @@ import org.matsim.api.core.v01.population.Person;
 
 import com.google.inject.Inject;
 
-import nyu.matsim.bikesharing.infrastructure.BikeshareServiceInterface;
-import nyu.matsim.bikesharing.utils.RentalInfo;
+import nyu.matsim.dockedservice.infrastructure.BikeshareServiceInterface;
+import nyu.matsim.dockedservice.utils.RentalInfo;
 
 public class BikeshareDemand implements PersonDepartureEventHandler, PersonArrivalEventHandler {
 

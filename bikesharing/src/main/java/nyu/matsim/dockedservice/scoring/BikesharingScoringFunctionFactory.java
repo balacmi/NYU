@@ -1,4 +1,4 @@
-package nyu.matsim.bikesharing.scoring;
+package nyu.matsim.dockedservice.scoring;
 
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.scoring.ScoringFunction;
