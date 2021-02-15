@@ -10,17 +10,14 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Route;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.RouteUtils;
-import org.matsim.core.router.CompositeStageActivityTypes;
 import org.matsim.core.router.RoutingModule;
-import org.matsim.core.router.StageActivityTypes;
-import org.matsim.core.router.StageActivityTypesImpl;
 import org.matsim.facilities.Facility;
 
 public class BikeshareRoutingModule implements RoutingModule {
 
 	private final static String BIKE_INTERACTION = "bike_interaction";
 
-	public List<? extends PlanElement> calcRoute(Facility<?> fromFacility, Facility<?> toFacility, double departureTime,
+	public List<? extends PlanElement> calcRoute(Facility fromFacility, Facility toFacility, double departureTime,
 			Person person) {
 		final List<PlanElement> trip = new ArrayList<PlanElement>();
 		final Leg accessLeg = PopulationUtils.createLeg("access_walk_bike");
@@ -37,17 +34,11 @@ public class BikeshareRoutingModule implements RoutingModule {
 		Route egressRoute = RouteUtils.createGenericRouteImpl(fromFacility.getLinkId(), toFacility.getLinkId());
 		egressLeg.setRoute(egressRoute);
 		trip.add(accessLeg);
-		//trip.add(accessActivity);
+		// trip.add(accessActivity);
 		trip.add(bikeshareLeg);
-		//trip.add(egressActivity);
+		// trip.add(egressActivity);
 		trip.add(egressLeg);
 		return trip;
-	}
-
-	public StageActivityTypes getStageActivityTypes() {
-		final CompositeStageActivityTypes stageTypes = new CompositeStageActivityTypes();
-		stageTypes.addActivityTypes(new StageActivityTypesImpl(BIKE_INTERACTION));
-		return stageTypes;
 	}
 
 }
