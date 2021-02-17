@@ -1,7 +1,9 @@
 package nyu.matsim.dockedservice.events;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.matsim.api.core.v01.Coord;
@@ -16,23 +18,28 @@ import org.matsim.api.core.v01.population.Person;
 import com.google.inject.Inject;
 
 import nyu.matsim.dockedservice.infrastructure.BikeshareServiceInterface;
+import nyu.matsim.dockedservice.utils.RejectedRental;
 import nyu.matsim.dockedservice.utils.RentalInfo;
 
-public class BikeshareDemand implements PersonDepartureEventHandler, PersonArrivalEventHandler {
+public class BikeshareDemand
+		implements PersonDepartureEventHandler, PersonArrivalEventHandler, NoBikeEventHandler, NoParkingEventHandler {
 
 	@Inject
 	private Network network;
 
 	@Inject
 	private BikeshareServiceInterface bikeshareFleet;
-	Map<Id<Person>, ArrayList<RentalInfo>> bikeRentals = new ConcurrentHashMap<>();
-	Map<Id<Person>, RentalInfo> currentRental = new ConcurrentHashMap<>();
+	
+	private final Map<Id<Person>, ArrayList<RentalInfo>> bikeRentals = new ConcurrentHashMap<>();
+	private final Map<Id<Person>, RentalInfo> currentRental = new ConcurrentHashMap<>();
+	private final Set<RejectedRental> rejectedRentals = new HashSet<>();
 
 	@Override
 	public void reset(int iteration) {
 
 		bikeRentals.clear();
 		currentRental.clear();
+		rejectedRentals.clear();
 	}
 
 	@Override
@@ -93,6 +100,24 @@ public class BikeshareDemand implements PersonDepartureEventHandler, PersonArriv
 
 	public Map<Id<Person>, ArrayList<RentalInfo>> getAgentRentalsMap() {
 		return this.bikeRentals;
+	}
+
+	public Set<RejectedRental> getRejectedRentals() {
+		return rejectedRentals;
+	}
+
+	@Override
+	public void handleEvent(NoParkingEvent event) {
+
+		this.rejectedRentals
+				.add(new RejectedRental(event.getPersonId(), event.getEventType(), event.getCoord(), event.getTime()));
+	}
+
+	@Override
+	public void handleEvent(NoBikeEvent event) {
+		this.rejectedRentals
+				.add(new RejectedRental(event.getPersonId(), event.getEventType(), event.getCoord(), event.getTime()));
+
 	}
 
 }

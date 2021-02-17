@@ -6,6 +6,7 @@ public class BikesharingConfigGroup extends ReflectiveConfigGroup {
 
 	private static final String GROUP_NAME = "bikesharing";
 	private int fleetSize = 100;
+	private String serviceInput;
 
 	public BikesharingConfigGroup() {
 		super(GROUP_NAME);
@@ -19,6 +20,16 @@ public class BikesharingConfigGroup extends ReflectiveConfigGroup {
 	@StringGetter("fleetSize")
 	public int getFleetSize() {
 		return this.fleetSize;
+	}
+
+	@StringSetter("serviceInput")
+	public void setServiceInput(final String serviceInput) {
+		this.serviceInput = serviceInput;
+	}
+
+	@StringGetter("serviceInput")
+	public String getServiceInput() {
+		return this.serviceInput;
 	}
 
 }
