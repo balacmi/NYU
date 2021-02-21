@@ -22,7 +22,6 @@ public class UserEngine implements ActivityStartEventHandler, MobsimEngine {
 
 	private InternalInterface internalInterface;
 
-	@Inject
 	public UserEngine(Id<SharingService> serviceId, UserLogic logic, EventsManager eventsManager) {
 		this.serviceId = serviceId;
 		this.logic = logic;

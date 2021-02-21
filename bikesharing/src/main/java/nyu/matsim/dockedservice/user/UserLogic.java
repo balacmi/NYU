@@ -49,7 +49,6 @@ public class UserLogic {
 
 	private final SharingService service;
 
-	@Inject
 	public UserLogic(SharingService service, RoutingModule accessEgressRoutingModule,
 			RoutingModule mainModeRoutingModule, Scenario scenario, EventsManager eventsManager) {
 		this.service = service;
