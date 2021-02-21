@@ -19,10 +19,11 @@ public class SharingServiceReader extends MatsimXmlParser {
 	@Override
 	public void startTag(String name, Attributes attributes, Stack<String> context) {
 		if (name.equals("vehicle")) {
+			
 			service.addVehicle(ImmutableSharingVehicleSpecification.newBuilder() //
 					.id(Id.create(attributes.getValue("id"), SharingVehicle.class)) //
-					.startLinkId(Id.createLinkId(attributes.getValue("startLink"))) //
-					.startStationId(Id.create(attributes.getValue("startStation"), SharingStation.class)) //
+					.startLinkId(attributes.getValue("startLink")==null ? null : Id.createLinkId(attributes.getValue("startLink"))) //
+					.startStationId(attributes.getValue("startStation")==null ? null : Id.create(attributes.getValue("startStation"), SharingStation.class)) //
 					.build());
 		} else if (name.equals("station")) {
 			service.addStation(ImmutableSharingStationSpecification.newBuilder() //
