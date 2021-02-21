@@ -54,7 +54,7 @@ public class SharingServiceConfigGroup extends ReflectiveConfigGroup {
 		super(GROUP_NAME);
 	}
 
-	@StringSetter(ID)
+	@StringGetter(ID)
 	public String getId() {
 		return id.toString();
 	}
