@@ -21,8 +21,8 @@ public class SharingServiceReader extends MatsimXmlParser {
 		if (name.equals("vehicle")) {
 			service.addVehicle(ImmutableSharingVehicleSpecification.newBuilder() //
 					.id(Id.create(attributes.getValue("id"), SharingVehicle.class)) //
-					.startLinkId(Id.createLinkId(attributes.getValue("link"))) //
-					.startStationId(Id.create(attributes.getValue("station"), SharingStation.class)) //
+					.startLinkId(Id.createLinkId(attributes.getValue("startLink"))) //
+					.startStationId(Id.create(attributes.getValue("startStation"), SharingStation.class)) //
 					.build());
 		} else if (name.equals("station")) {
 			service.addStation(ImmutableSharingStationSpecification.newBuilder() //
