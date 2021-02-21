@@ -27,14 +27,7 @@ public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 
 	@Override
 	protected void configureQSim() {
-		addModalComponent(UserEngine.class);
-
-		bindModal(UserEngine.class).toProvider(modalProvider(getter -> {
-			EventsManager eventsManager = getter.get(EventsManager.class);
-			UserLogic logic = getter.getModal(UserLogic.class);
-
-			return new UserEngine(Id.create(serviceConfig.getId(), SharingService.class), logic, eventsManager);
-		})).in(Singleton.class);
+		//addModalComponent(UserEngine.class);
 
 		bindModal(UserLogic.class).toProvider(modalProvider(getter -> {
 			EventsManager eventsManager = getter.get(EventsManager.class);
@@ -46,7 +39,16 @@ public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 			RoutingModule mainModeRoutingModule = getter.getNamed(RoutingModule.class, serviceConfig.getMode());
 
 			return new UserLogic(service, accessEgressRoutingModule, mainModeRoutingModule, scenario, eventsManager);
-		})).in(Singleton.class);
+		})).asEagerSingleton();
+		
+		bindModal(UserEngine.class).toProvider(modalProvider(getter -> {
+			EventsManager eventsManager = getter.get(EventsManager.class);
+			UserLogic logic = getter.getModal(UserLogic.class);
+
+			return new UserEngine(Id.create(serviceConfig.getId(), SharingService.class), logic, eventsManager);
+		})).asEagerSingleton();
+
+		
 
 		bindModal(FreefloatingService.class).toProvider(modalProvider(getter -> {
 			Network network = getter.get(Network.class);
@@ -56,7 +58,7 @@ public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 			return new FreefloatingService(Id.create(serviceConfig.getId(), SharingService.class),
 					specification.getVehicles(), network, serviceConfig.getMaximumAccessEgressDistance(),
 					eventsManager);
-		}));
+		})).asEagerSingleton();
 
 		switch (serviceConfig.getServiceScheme()) {
 		case Freefloating:

@@ -10,6 +10,8 @@ import org.matsim.core.mobsim.qsim.InternalInterface;
 import org.matsim.core.mobsim.qsim.agents.WithinDayAgentUtils;
 import org.matsim.core.mobsim.qsim.interfaces.MobsimEngine;
 
+import com.google.inject.Inject;
+
 import nyu.matsim.dockedservice.service.SharingService;
 import nyu.matsim.dockedservice.service.SharingUtils;
 
@@ -20,6 +22,7 @@ public class UserEngine implements ActivityStartEventHandler, MobsimEngine {
 
 	private InternalInterface internalInterface;
 
+	@Inject
 	public UserEngine(Id<SharingService> serviceId, UserLogic logic, EventsManager eventsManager) {
 		this.serviceId = serviceId;
 		this.logic = logic;

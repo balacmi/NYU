@@ -26,6 +26,7 @@ import org.matsim.core.router.TripStructureUtils;
 import org.matsim.facilities.Facility;
 
 import com.google.common.base.Verify;
+import com.google.inject.Inject;
 
 import nyu.matsim.dockedservice.service.SharingService;
 import nyu.matsim.dockedservice.service.SharingUtils;
@@ -48,6 +49,7 @@ public class UserLogic {
 
 	private final SharingService service;
 
+	@Inject
 	public UserLogic(SharingService service, RoutingModule accessEgressRoutingModule,
 			RoutingModule mainModeRoutingModule, Scenario scenario, EventsManager eventsManager) {
 		this.service = service;
