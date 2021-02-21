@@ -8,8 +8,6 @@ import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.router.RoutingModule;
 
-import com.google.inject.Singleton;
-
 import nyu.matsim.dockedservice.io.SharingServiceSpecification;
 import nyu.matsim.dockedservice.service.FreefloatingService;
 import nyu.matsim.dockedservice.service.SharingService;
@@ -27,7 +25,14 @@ public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 
 	@Override
 	protected void configureQSim() {
-		//addModalComponent(UserEngine.class);
+		addModalComponent(UserEngine.class);
+
+		bindModal(UserEngine.class).toProvider(modalProvider(getter -> {
+			EventsManager eventsManager = getter.get(EventsManager.class);
+			UserLogic logic = getter.getModal(UserLogic.class);
+
+			return new UserEngine(Id.create(serviceConfig.getId(), SharingService.class), logic, eventsManager);
+		})).asEagerSingleton();
 
 		bindModal(UserLogic.class).toProvider(modalProvider(getter -> {
 			EventsManager eventsManager = getter.get(EventsManager.class);
@@ -40,15 +45,6 @@ public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 
 			return new UserLogic(service, accessEgressRoutingModule, mainModeRoutingModule, scenario, eventsManager);
 		})).asEagerSingleton();
-		
-		bindModal(UserEngine.class).toProvider(modalProvider(getter -> {
-			EventsManager eventsManager = getter.get(EventsManager.class);
-			UserLogic logic = getter.getModal(UserLogic.class);
-
-			return new UserEngine(Id.create(serviceConfig.getId(), SharingService.class), logic, eventsManager);
-		})).asEagerSingleton();
-
-		
 
 		bindModal(FreefloatingService.class).toProvider(modalProvider(getter -> {
 			Network network = getter.get(Network.class);

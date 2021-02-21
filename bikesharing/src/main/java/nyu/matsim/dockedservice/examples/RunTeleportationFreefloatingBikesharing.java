@@ -52,8 +52,7 @@ public class RunTeleportationFreefloatingBikesharing {
 
 		// Finally, we need to make sure that the service mode (sharing:velib) is
 		// considered in mode choice.
-		List<String> modes = Arrays.asList(config.subtourModeChoice().getModes());
-		modes = new ArrayList<>(modes);
+		List<String> modes = new ArrayList<>(Arrays.asList(config.subtourModeChoice().getModes()));
 		modes.add(SharingUtils.getServiceMode(serviceConfig));
 		config.subtourModeChoice().setModes(modes.toArray(new String[modes.size()]));
 
