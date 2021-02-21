@@ -1,6 +1,6 @@
 <?xml encoding="UTF-8"?>
 
-<!ELEMENT uam (stations,vehicles)>
+<!ELEMENT uam (stations*,vehicles)>
 
 <!ELEMENT stations (station)*>
 <!ELEMENT vehicles (vehicle)*>
