@@ -1,5 +1,6 @@
 package nyu.matsim.dockedservice.examples;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,10 +42,10 @@ public class RunTeleportationFreefloatingBikesharing {
 		// ... with freefloating characteristics
 		serviceConfig.setMaximumAccessEgressDistance(1000);
 		serviceConfig.setServiceScheme(ServiceScheme.Freefloating);
-		serviceConfig.setServiceAreaShapeFile("velib_area.shp");
+		serviceConfig.setServiceAreaShapeFile(null);
 
 		// ... with a number of available vehicles and their initial locations
-		serviceConfig.setServiceInputFile("velib.xml");
+		serviceConfig.setServiceInputFile("shared_taxi_vehicles.xml");
 
 		// ... and, we need to define the underlying mode, here "bike".
 		serviceConfig.setMode("bike");
@@ -52,6 +53,7 @@ public class RunTeleportationFreefloatingBikesharing {
 		// Finally, we need to make sure that the service mode (sharing:velib) is
 		// considered in mode choice.
 		List<String> modes = Arrays.asList(config.subtourModeChoice().getModes());
+		modes = new ArrayList<>(modes);
 		modes.add(SharingUtils.getServiceMode(serviceConfig));
 		config.subtourModeChoice().setModes(modes.toArray(new String[modes.size()]));
 
