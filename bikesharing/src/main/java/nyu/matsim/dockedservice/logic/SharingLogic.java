@@ -1,4 +1,4 @@
-package nyu.matsim.dockedservice.user;
+package nyu.matsim.dockedservice.logic;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +35,7 @@ import nyu.matsim.dockedservice.service.events.SharingFailedDropoffEvent;
 import nyu.matsim.dockedservice.service.events.SharingFailedPickupEvent;
 import nyu.matsim.dockedservice.service.events.SharingPickupEvent;
 
-public class UserLogic {
+public class SharingLogic {
 	private final IdMap<Person, SharingVehicle> activeVehicles = new IdMap<>(Person.class);
 
 	private final RoutingModule accessEgressRoutingModule;
@@ -48,7 +48,7 @@ public class UserLogic {
 
 	private final SharingService service;
 
-	public UserLogic(SharingService service, RoutingModule accessEgressRoutingModule,
+	public SharingLogic(SharingService service, RoutingModule accessEgressRoutingModule,
 			RoutingModule mainModeRoutingModule, Scenario scenario, EventsManager eventsManager) {
 		this.service = service;
 		this.eventsManager = eventsManager;
@@ -64,9 +64,11 @@ public class UserLogic {
 	/**
 	 * Agent tries to pick up a vehicle.
 	 * 
+	 * If it returns false, agent needs to abort!
+	 * 
 	 * @param agent
 	 */
-	public void tryPickupVehicle(double now, MobsimAgent agent) {
+	public boolean tryPickupVehicle(double now, MobsimAgent agent) {
 		Plan plan = WithinDayAgentUtils.getModifiablePlan(agent);
 		int pickupActivityIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(agent);
 
@@ -89,6 +91,9 @@ public class UserLogic {
 						selectedVehicle.get().getId(), service.getStationId(vehicleLinkId)));
 			} else {
 				// The closest vehicle is not here, we need to get there after this activity ...
+
+				eventsManager.processEvent(new SharingFailedPickupEvent(now, service.getId(), agent.getId(),
+						vehicleLinkId, service.getStationId(vehicleLinkId)));
 
 				// Remove everything until the dropoff activity
 				int dropoffActivityIndex = findDropoffActivityIndex(pickupActivityIndex, plan);
@@ -121,16 +126,17 @@ public class UserLogic {
 				// Insert new plan elements
 				plan.getPlanElements().addAll(pickupActivityIndex + 1, updatedElements);
 			}
-
-			eventsManager.processEvent(new SharingFailedPickupEvent(now, service.getId(), agent.getId(), vehicleLinkId,
-					service.getStationId(vehicleLinkId)));
+			
+			return true;
 		} else {
-			// TODO Send event
+			return false;
 		}
 	}
 
 	/**
 	 * Agent tries to drop off a vehicle.
+	 * 
+	 * If it returns false, agent needs to abort!
 	 * 
 	 * @param agent
 	 */
@@ -140,7 +146,7 @@ public class UserLogic {
 
 		Verify.verify(plan.getPlanElements().get(dropoffActivityIndex) instanceof Activity);
 		Activity dropoffActivity = (Activity) plan.getPlanElements().get(dropoffActivityIndex);
-		Verify.verify(dropoffActivity.getType().equals(SharingUtils.PICKUP_ACTIVITY));
+		Verify.verify(dropoffActivity.getType().equals(SharingUtils.DROPOFF_ACTIVITY));
 
 		SharingVehicle vehicle = activeVehicles.get(agent.getId());
 		Verify.verifyNotNull(vehicle);
@@ -157,6 +163,9 @@ public class UserLogic {
 					closestDropoffLinkId, vehicle.getId(), service.getStationId(closestDropoffLinkId)));
 		} else {
 			// We cannot drop the vehicle here, so let's try the proposed place
+
+			eventsManager.processEvent(new SharingFailedDropoffEvent(now, service.getId(), agent.getId(),
+					closestDropoffLinkId, vehicle.getId(), service.getStationId(closestDropoffLinkId)));
 
 			// Remove everything until the end of the trip
 			int destinationActivityIndex = findNextOrdinaryActivityIndex(dropoffActivityIndex, plan);
@@ -188,11 +197,7 @@ public class UserLogic {
 
 			// Insert new plan elements
 			plan.getPlanElements().addAll(dropoffActivityIndex + 1, updatedElements);
-
-			eventsManager.processEvent(new SharingFailedDropoffEvent(now, service.getId(), agent.getId(),
-					closestDropoffLinkId, vehicle.getId(), service.getStationId(closestDropoffLinkId)));
 		}
-
 	}
 
 	private Activity createPickupActivity(double now, Id<Link> linkId) {

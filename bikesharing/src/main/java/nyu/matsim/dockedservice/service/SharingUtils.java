@@ -2,9 +2,12 @@ package nyu.matsim.dockedservice.service;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.population.Activity;
+import org.matsim.contrib.dvrp.run.DvrpModes;
+import org.matsim.core.mobsim.qsim.components.QSimComponentsConfigurator;
 
 import com.google.common.base.Verify;
 
+import nyu.matsim.dockedservice.run.SharingConfigGroup;
 import nyu.matsim.dockedservice.run.SharingServiceConfigGroup;
 
 public class SharingUtils {
@@ -48,5 +51,13 @@ public class SharingUtils {
 
 	static public String getServiceMode(SharingServiceConfigGroup serviceConfig) {
 		return getServiceMode(Id.create(serviceConfig.getId(), SharingService.class));
+	}
+
+	public static QSimComponentsConfigurator configureQSim(SharingConfigGroup sharingConfig) {
+		return components -> {
+			for (SharingServiceConfigGroup serviceConfig : sharingConfig.getServices()) {
+				components.addComponent(DvrpModes.mode(getServiceMode(serviceConfig)));
+			}
+		};
 	}
 }

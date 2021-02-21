@@ -1,6 +1,7 @@
 package nyu.matsim.dockedservice.service;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Optional;
 
 import org.matsim.api.core.v01.Coord;
@@ -8,7 +9,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.IdSet;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.collections.QuadTree;
@@ -17,7 +17,6 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import com.google.common.base.Verify;
 
 import nyu.matsim.dockedservice.io.SharingVehicleSpecification;
-import nyu.matsim.dockedservice.service.events.SharingVehicleEvent;
 
 public class FreefloatingService implements SharingService {
 	private final Id<SharingService> serviceId;
@@ -27,9 +26,10 @@ public class FreefloatingService implements SharingService {
 
 	private final IdSet<SharingVehicle> lockedIds = new IdSet<>(SharingVehicle.class);
 	private final QuadTree<SharingVehicle> spatialIndex;
+	private final Collection<SharingVehicle> vehicles = new LinkedList<>();
 
 	public FreefloatingService(Id<SharingService> serviceId, Collection<SharingVehicleSpecification> fleet,
-			Network network, double maximumDistance, EventsManager eventsManager) {
+			Network network, double maximumDistance) {
 		this.network = network;
 
 		this.maximumDistance = maximumDistance;
@@ -45,12 +45,10 @@ public class FreefloatingService implements SharingService {
 
 			Link link = network.getLinks().get(specfication.getStartLinkId().get());
 			SharingVehicle vehicle = new SharingVehicle(specfication, link);
+			vehicles.add(vehicle);
 
 			Coord coord = link.getCoord();
 			spatialIndex.put(coord.getX(), coord.getY(), vehicle);
-
-			eventsManager.processEvent(
-					new SharingVehicleEvent(0.0, serviceId, link.getId(), vehicle.getId(), Optional.empty()));
 		}
 	}
 
@@ -107,5 +105,10 @@ public class FreefloatingService implements SharingService {
 	@Override
 	public Id<SharingService> getId() {
 		return serviceId;
+	}
+
+	@Override
+	public Collection<SharingVehicle> getVehicles() {
+		return vehicles;
 	}
 }

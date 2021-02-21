@@ -8,12 +8,14 @@ import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.router.RoutingModule;
 
+import com.google.inject.Singleton;
+
 import nyu.matsim.dockedservice.io.SharingServiceSpecification;
+import nyu.matsim.dockedservice.logic.SharingEngine;
+import nyu.matsim.dockedservice.logic.SharingLogic;
 import nyu.matsim.dockedservice.service.FreefloatingService;
 import nyu.matsim.dockedservice.service.SharingService;
 import nyu.matsim.dockedservice.service.SharingUtils;
-import nyu.matsim.dockedservice.user.UserEngine;
-import nyu.matsim.dockedservice.user.UserLogic;
 
 public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 	private final SharingServiceConfigGroup serviceConfig;
@@ -25,16 +27,15 @@ public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 
 	@Override
 	protected void configureQSim() {
-		addModalComponent(UserEngine.class);
-
-		bindModal(UserEngine.class).toProvider(modalProvider(getter -> {
+		addModalComponent(SharingEngine.class, modalProvider(getter -> {
 			EventsManager eventsManager = getter.get(EventsManager.class);
-			UserLogic logic = getter.getModal(UserLogic.class);
+			SharingLogic logic = getter.getModal(SharingLogic.class);
+			SharingService service = getter.getModal(SharingService.class);
 
-			return new UserEngine(Id.create(serviceConfig.getId(), SharingService.class), logic, eventsManager);
-		})).asEagerSingleton();
+			return new SharingEngine(service, logic, eventsManager);
+		}));
 
-		bindModal(UserLogic.class).toProvider(modalProvider(getter -> {
+		bindModal(SharingLogic.class).toProvider(modalProvider(getter -> {
 			EventsManager eventsManager = getter.get(EventsManager.class);
 			Scenario scenario = getter.get(Scenario.class);
 
@@ -43,18 +44,16 @@ public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 			RoutingModule accessEgressRoutingModule = getter.getNamed(RoutingModule.class, TransportMode.walk);
 			RoutingModule mainModeRoutingModule = getter.getNamed(RoutingModule.class, serviceConfig.getMode());
 
-			return new UserLogic(service, accessEgressRoutingModule, mainModeRoutingModule, scenario, eventsManager);
-		})).asEagerSingleton();
+			return new SharingLogic(service, accessEgressRoutingModule, mainModeRoutingModule, scenario, eventsManager);
+		})).in(Singleton.class);
 
 		bindModal(FreefloatingService.class).toProvider(modalProvider(getter -> {
 			Network network = getter.get(Network.class);
-			EventsManager eventsManager = getter.get(EventsManager.class);
 			SharingServiceSpecification specification = getter.getModal(SharingServiceSpecification.class);
 
 			return new FreefloatingService(Id.create(serviceConfig.getId(), SharingService.class),
-					specification.getVehicles(), network, serviceConfig.getMaximumAccessEgressDistance(),
-					eventsManager);
-		})).asEagerSingleton();
+					specification.getVehicles(), network, serviceConfig.getMaximumAccessEgressDistance());
+		})).in(Singleton.class);
 
 		switch (serviceConfig.getServiceScheme()) {
 		case Freefloating:

@@ -55,6 +55,10 @@ public class SharingRoutingModule implements RoutingModule {
 			return null;
 		}
 
+		if (pickupLinkId.get().equals(dropoffLinkId.get())) {
+			return null;
+		}
+
 		// Route pickup stage
 
 		List<? extends PlanElement> pickupElements = routeAccessEgressStage(fromFacility.getLinkId(),

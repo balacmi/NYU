@@ -8,6 +8,9 @@ import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.ModeRoutingParams;
 import org.matsim.core.controler.Controler;
 
 import nyu.matsim.dockedservice.run.SharingConfigGroup;
@@ -24,9 +27,19 @@ public class RunTeleportationFreefloatingBikesharing {
 
 		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"));
 
-		// By default, "bike" is configured to use Euclidean distance with
-		// distance/speed factor.
-		// By default, "bike" is configured to be simulated using teleportation.
+		// We define bike to be routed based on Euclidean distance.
+		ModeRoutingParams bikeRoutingParams = new ModeRoutingParams("bike");
+		bikeRoutingParams.setTeleportedModeSpeed(5.0);
+		bikeRoutingParams.setBeelineDistanceFactor(1.3);
+		config.plansCalcRoute().addModeRoutingParams(bikeRoutingParams);
+
+		// Walk is deleted by adding bike here, we need to re-add it ...
+		ModeRoutingParams walkRoutingParams = new ModeRoutingParams("walk");
+		walkRoutingParams.setTeleportedModeSpeed(2.0);
+		walkRoutingParams.setBeelineDistanceFactor(1.3);
+		config.plansCalcRoute().addModeRoutingParams(walkRoutingParams);
+
+		// By default, "bike" will be simulated using teleportation.
 
 		// We need to add the sharing config group
 		SharingConfigGroup sharingConfig = new SharingConfigGroup();
@@ -56,11 +69,30 @@ public class RunTeleportationFreefloatingBikesharing {
 		modes.add(SharingUtils.getServiceMode(serviceConfig));
 		config.subtourModeChoice().setModes(modes.toArray(new String[modes.size()]));
 
+		// We need to add interaction activity types to scoring
+		ActivityParams pickupParams = new ActivityParams(SharingUtils.PICKUP_ACTIVITY);
+		pickupParams.setScoringThisActivityAtAll(false);
+		config.planCalcScore().addActivityParams(pickupParams);
+
+		ActivityParams dropoffParams = new ActivityParams(SharingUtils.DROPOFF_ACTIVITY);
+		dropoffParams.setScoringThisActivityAtAll(false);
+		config.planCalcScore().addActivityParams(dropoffParams);
+
+		// We need to score bike
+		ModeParams bikeScoringParams = new ModeParams("bike");
+		config.planCalcScore().addModeParams(bikeScoringParams);
+
+		// Write out all events (DEBUG)
+		config.controler().setWriteEventsInterval(1);
+
 		// Set up controller (no specific settings needed for scenario)
 		Controler controller = new Controler(config);
 
 		// Does not really "override" anything
 		controller.addOverridingModule(new SharingModule());
+
+		// Enable QSim components
+		controller.configureQSimComponents(SharingUtils.configureQSim(sharingConfig));
 
 		controller.run();
 	}

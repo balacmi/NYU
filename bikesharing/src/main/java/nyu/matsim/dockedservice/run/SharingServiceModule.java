@@ -50,6 +50,8 @@ public class SharingServiceModule extends AbstractDvrpModeModule {
 					interactionFinder, Id.create(serviceConfig.getId(), SharingService.class));
 		}));
 
+		addRoutingModuleBinding(getMode()).to(modalKey(SharingRoutingModule.class));
+
 		bindModal(FreefloatingInteractionFinder.class).toProvider(modalProvider(getter -> {
 			Network network = getter.get(Network.class);
 			return new FreefloatingInteractionFinder(network);
