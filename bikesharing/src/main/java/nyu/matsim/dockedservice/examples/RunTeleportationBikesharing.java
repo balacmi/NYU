@@ -19,7 +19,7 @@ import nyu.matsim.dockedservice.run.SharingServiceConfigGroup;
 import nyu.matsim.dockedservice.run.SharingServiceConfigGroup.ServiceScheme;
 import nyu.matsim.dockedservice.service.SharingUtils;
 
-public class RunTeleportationFreefloatingBikesharing {
+public class RunTeleportationBikesharing {
 	static public void main(String[] args) throws ConfigurationException {
 		CommandLine cmd = new CommandLine.Builder(args) //
 				.requireOptions("config-path") //

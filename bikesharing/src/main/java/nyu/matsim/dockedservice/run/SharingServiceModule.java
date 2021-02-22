@@ -15,9 +15,13 @@ import com.google.inject.Singleton;
 import nyu.matsim.dockedservice.io.DefaultSharingServiceSpecification;
 import nyu.matsim.dockedservice.io.SharingServiceReader;
 import nyu.matsim.dockedservice.io.SharingServiceSpecification;
+import nyu.matsim.dockedservice.io.validation.FreefloatingServiceValidator;
+import nyu.matsim.dockedservice.io.validation.SharingServiceValidator;
+import nyu.matsim.dockedservice.io.validation.StationBasedServiceValidator;
 import nyu.matsim.dockedservice.routing.FreefloatingInteractionFinder;
 import nyu.matsim.dockedservice.routing.InteractionFinder;
 import nyu.matsim.dockedservice.routing.SharingRoutingModule;
+import nyu.matsim.dockedservice.routing.StationBasedInteractionFinder;
 import nyu.matsim.dockedservice.service.SharingService;
 import nyu.matsim.dockedservice.service.SharingUtils;
 
@@ -58,15 +62,13 @@ public class SharingServiceModule extends AbstractDvrpModeModule {
 			return new FreefloatingInteractionFinder(network);
 		})).in(Singleton.class);
 
-		switch (serviceConfig.getServiceScheme()) {
-		case Freefloating:
-			bindModal(InteractionFinder.class).to(modalKey(FreefloatingInteractionFinder.class));
-			break;
-		case StationBased:
-			throw new IllegalStateException("TODO");
-		default:
-			throw new IllegalStateException();
-		}
+		bindModal(StationBasedInteractionFinder.class).toProvider(modalProvider(getter -> {
+			Network network = getter.get(Network.class);
+			SharingServiceSpecification specification = getter.getModal(SharingServiceSpecification.class);
+
+			return new StationBasedInteractionFinder(network, specification,
+					serviceConfig.getMaximumAccessEgressDistance());
+		}));
 
 		bindModal(OutputWriter.class).toProvider(modalProvider(getter -> {
 			SharingServiceSpecification specification = getter.getModal(SharingServiceSpecification.class);
@@ -74,8 +76,39 @@ public class SharingServiceModule extends AbstractDvrpModeModule {
 
 			return new OutputWriter(Id.create(serviceConfig.getId(), SharingService.class), specification,
 					outputHierarchy);
-		}));
+		})).in(Singleton.class);
 
 		addControlerListenerBinding().to(modalKey(OutputWriter.class));
+
+		bindModal(FreefloatingServiceValidator.class).toProvider(modalProvider(getter -> {
+			return new FreefloatingServiceValidator(Id.create(serviceConfig.getId(), SharingService.class));
+		})).in(Singleton.class);
+
+		bindModal(StationBasedServiceValidator.class).toProvider(modalProvider(getter -> {
+			return new StationBasedServiceValidator(Id.create(serviceConfig.getId(), SharingService.class));
+		})).in(Singleton.class);
+
+		bindModal(ValidationListener.class).toProvider(modalProvider(getter -> {
+			SharingServiceSpecification specification = getter.getModal(SharingServiceSpecification.class);
+			SharingServiceValidator validator = getter.getModal(SharingServiceValidator.class);
+
+			return new ValidationListener(Id.create(serviceConfig.getId(), SharingService.class), validator,
+					specification);
+		}));
+
+		addControlerListenerBinding().to(modalKey(ValidationListener.class));
+
+		switch (serviceConfig.getServiceScheme()) {
+		case Freefloating:
+			bindModal(InteractionFinder.class).to(modalKey(FreefloatingInteractionFinder.class));
+			bindModal(SharingServiceValidator.class).to(modalKey(FreefloatingServiceValidator.class));
+			break;
+		case StationBased:
+			bindModal(InteractionFinder.class).to(modalKey(StationBasedInteractionFinder.class));
+			bindModal(SharingServiceValidator.class).to(modalKey(StationBasedServiceValidator.class));
+			break;
+		default:
+			throw new IllegalStateException();
+		}
 	}
 }

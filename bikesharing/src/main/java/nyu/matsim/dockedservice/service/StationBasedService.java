@@ -1,6 +1,8 @@
 package nyu.matsim.dockedservice.service;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.matsim.api.core.v01.Coord;
@@ -16,9 +18,11 @@ import org.matsim.core.utils.geometry.CoordUtils;
 
 import com.google.common.base.Verify;
 
+import nyu.matsim.dockedservice.io.SharingServiceSpecification;
+import nyu.matsim.dockedservice.io.SharingStationSpecification;
 import nyu.matsim.dockedservice.io.SharingVehicleSpecification;
 
-public class FreefloatingService implements SharingService {
+public class StationBasedService implements SharingService {
 	private final Id<SharingService> serviceId;
 	private final double maximumDistance;
 
@@ -26,24 +30,48 @@ public class FreefloatingService implements SharingService {
 
 	private final IdSet<SharingVehicle> activeRentals = new IdSet<>(SharingVehicle.class);
 	private final IdMap<SharingVehicle, SharingVehicle> vehicles = new IdMap<>(SharingVehicle.class);
-	private final QuadTree<SharingVehicle> availableVehicles;
+	private final IdMap<SharingStation, SharingStation> stations = new IdMap<>(SharingStation.class);
 
-	public FreefloatingService(Id<SharingService> serviceId, Collection<SharingVehicleSpecification> fleet,
-			Network network, double maximumDistance) {
+	private final QuadTree<SharingVehicle> availableVehicles;
+	private final QuadTree<SharingStation> availableStations;
+
+	private final Map<Id<Link>, Id<SharingStation>> linkStationMap = new HashMap<>();
+	private final Map<Id<SharingVehicle>, SharingStation> vehicleStationMap = new HashMap<>();
+
+	public StationBasedService(Id<SharingService> serviceId, SharingServiceSpecification specification, Network network,
+			double maximumDistance) {
 		this.network = network;
 
 		this.maximumDistance = maximumDistance;
 		this.serviceId = serviceId;
 
-		for (SharingVehicleSpecification vehicle : fleet) {
-			Link link = network.getLinks().get(vehicle.getStartLinkId().get());
-			vehicles.put(vehicle.getId(), new SharingVehicle(vehicle, link));
+		for (SharingStationSpecification station : specification.getStations()) {
+			Link link = network.getLinks().get(station.getLinkId());
+			Verify.verifyNotNull(link);
+
+			this.stations.put(station.getId(), new SharingStation(station, link));
+			this.linkStationMap.put(station.getLinkId(), station.getId());
+		}
+
+		for (SharingVehicleSpecification vehicle : specification.getVehicles()) {
+			SharingStation station = this.stations.get(vehicle.getStartStationId().get());
+			SharingVehicle instance = new SharingVehicle(vehicle, station.getLink());
+
+			this.vehicles.put(vehicle.getId(), instance);
+			this.vehicleStationMap.put(vehicle.getId(), station);
+			station.addVehicle(instance);
 		}
 
 		double[] bounds = NetworkUtils.getBoundingBox(network.getNodes().values());
+
 		this.availableVehicles = new QuadTree<>(bounds[0], bounds[1], bounds[2], bounds[3]);
 		vehicles.values().forEach(v -> {
 			availableVehicles.put(v.getLink().getCoord().getX(), v.getLink().getCoord().getY(), v);
+		});
+
+		this.availableStations = new QuadTree<>(bounds[0], bounds[1], bounds[2], bounds[3]);
+		stations.values().stream().filter(s -> s.getFreeCapacity() > 0).forEach(s -> {
+			availableStations.put(s.getLink().getCoord().getX(), s.getLink().getCoord().getY(), s);
 		});
 	}
 
@@ -54,6 +82,16 @@ public class FreefloatingService implements SharingService {
 
 		Coord coord = vehicle.getLink().getCoord();
 		availableVehicles.remove(coord.getX(), coord.getY(), vehicle);
+
+		SharingStation station = vehicleStationMap.get(vehicle.getId());
+
+		if (station.getFreeCapacity() == 0) {
+			// Space is freed up, so add it to the available stations
+			Coord stationCoord = station.getLink().getCoord();
+			availableStations.put(stationCoord.getX(), stationCoord.getY(), station);
+		}
+
+		station.removeVehicle(vehicle);
 	}
 
 	@Override
@@ -66,6 +104,16 @@ public class FreefloatingService implements SharingService {
 
 		Coord coord = vehicle.getLink().getCoord();
 		availableVehicles.put(coord.getX(), coord.getY(), vehicle);
+
+		SharingStation station = vehicleStationMap.get(vehicle.getId());
+
+		if (station.getFreeCapacity() == 1) {
+			// Station becomes full no, so remove it from available stations
+			Coord stationCoord = station.getLink().getCoord();
+			availableStations.remove(stationCoord.getX(), stationCoord.getY(), station);
+		}
+
+		station.addVehicle(vehicle);
 	}
 
 	@Override
@@ -88,12 +136,17 @@ public class FreefloatingService implements SharingService {
 
 	@Override
 	public Id<Link> findClosestDropoffLocation(SharingVehicle vehicle, MobsimAgent agent) {
-		return agent.getCurrentLinkId();
+		Link currentLink = network.getLinks().get(agent.getCurrentLinkId());
+		Verify.verify(availableStations.size() > 0,
+				"It should never happen that no station is available (it means spots < vehicles)");
+
+		return availableStations.getClosest(currentLink.getCoord().getX(), currentLink.getCoord().getY()).getLink()
+				.getId();
 	}
 
 	@Override
 	public Optional<Id<SharingStation>> getStationId(Id<Link> linkId) {
-		return Optional.empty();
+		return Optional.ofNullable(linkStationMap.get(linkId));
 	}
 
 	@Override

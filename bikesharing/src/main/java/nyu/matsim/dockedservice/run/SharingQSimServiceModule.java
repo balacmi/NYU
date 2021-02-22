@@ -16,6 +16,7 @@ import nyu.matsim.dockedservice.logic.SharingLogic;
 import nyu.matsim.dockedservice.service.FreefloatingService;
 import nyu.matsim.dockedservice.service.SharingService;
 import nyu.matsim.dockedservice.service.SharingUtils;
+import nyu.matsim.dockedservice.service.StationBasedService;
 
 public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 	private final SharingServiceConfigGroup serviceConfig;
@@ -55,12 +56,21 @@ public class SharingQSimServiceModule extends AbstractDvrpModeQSimModule {
 					specification.getVehicles(), network, serviceConfig.getMaximumAccessEgressDistance());
 		})).in(Singleton.class);
 
+		bindModal(StationBasedService.class).toProvider(modalProvider(getter -> {
+			Network network = getter.get(Network.class);
+			SharingServiceSpecification specification = getter.getModal(SharingServiceSpecification.class);
+
+			return new StationBasedService(Id.create(serviceConfig.getId(), SharingService.class), specification,
+					network, serviceConfig.getMaximumAccessEgressDistance());
+		})).in(Singleton.class);
+
 		switch (serviceConfig.getServiceScheme()) {
 		case Freefloating:
 			bindModal(SharingService.class).to(modalKey(FreefloatingService.class));
 			break;
 		case StationBased:
-			throw new IllegalStateException("TODO");
+			bindModal(SharingService.class).to(modalKey(StationBasedService.class));
+			break;
 		default:
 			throw new IllegalStateException();
 		}

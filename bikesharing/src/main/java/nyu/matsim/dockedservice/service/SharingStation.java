@@ -1,11 +1,8 @@
 package nyu.matsim.dockedservice.service;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 
@@ -48,15 +45,7 @@ public class SharingStation {
 		return specification.getCapacity() - vehicles.size();
 	}
 
-	public Id<Link> getLinkId() {
-		return link.getId();
-	}
-
-	public Coord getCoord() {
-		return link.getCoord();
-	}
-
-	public Map<String, Object> getCustomAttributes() {
-		return Collections.emptyMap();
+	public Link getLink() {
+		return link;
 	}
 }
