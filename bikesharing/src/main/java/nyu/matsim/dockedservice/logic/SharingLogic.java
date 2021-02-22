@@ -61,6 +61,64 @@ public class SharingLogic {
 		this.populationFactory = scenario.getPopulation().getFactory();
 	}
 
+	public boolean tryBookVehicle(double now, MobsimAgent agent) {
+		Plan plan = WithinDayAgentUtils.getModifiablePlan(agent);
+		int bookingActivityIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(agent);
+
+		Verify.verify(plan.getPlanElements().get(bookingActivityIndex) instanceof Activity);
+		Activity bookingActivity = (Activity) plan.getPlanElements().get(bookingActivityIndex);
+		Verify.verify(bookingActivity.getType().equals(SharingUtils.BOOKING_ACTIVITY));
+
+		// Find closest vehicle and hope it is at the current station / link
+		Optional<SharingVehicle> closestVehicle = service.findClosestVehicle(agent);
+
+		if (closestVehicle.isPresent()) {
+			Id<Link> vehicleLinkId = closestVehicle.get().getLink().getId();
+
+			// We need to get to the closest vehicle after this activity ...
+
+			// Maybe we want to throw event that the vehicle was found
+			// eventsManager.processEvent(new SharingFailedPickupEvent(now, service.getId(),
+			// agent.getId(), vehicleLinkId,
+			// service.getStationId(vehicleLinkId)));
+
+			// Remove everything until the dropoff activity
+			int dropoffActivityIndex = findDropoffActivityIndex(bookingActivityIndex, plan);
+			Activity dropoffActivity = (Activity) plan.getPlanElements().get(dropoffActivityIndex);
+
+			plan.getPlanElements().subList(bookingActivityIndex + 1, dropoffActivityIndex).clear();
+
+			// Create new plan elements
+			List<PlanElement> updatedElements = new LinkedList<>();
+
+			// 1) Leg to pickup activity
+			List<? extends PlanElement> accessElements = routeAccessEgressStage(bookingActivity.getLinkId(),
+					vehicleLinkId, now, agent);
+			updatedElements.addAll(accessElements);
+
+			for (PlanElement planElement : accessElements) {
+				now = TripRouter.calcEndOfPlanElement(now, planElement, config);
+			}
+
+			// 2) Pickup activity
+			Activity updatedPickupActivity = createPickupActivity(now, vehicleLinkId);
+			updatedElements.add(updatedPickupActivity);
+			now = TripRouter.calcEndOfPlanElement(now, updatedPickupActivity, config);
+
+			// 3) Leg to dropoff activity
+			List<? extends PlanElement> mainElements = routeMainStage(vehicleLinkId, dropoffActivity.getLinkId(), now,
+					agent);
+			updatedElements.addAll(mainElements);
+
+			// Insert new plan elements
+			plan.getPlanElements().addAll(bookingActivityIndex + 1, updatedElements);
+
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**
 	 * Agent tries to pick up a vehicle.
 	 * 
@@ -126,7 +184,7 @@ public class SharingLogic {
 				// Insert new plan elements
 				plan.getPlanElements().addAll(pickupActivityIndex + 1, updatedElements);
 			}
-			
+
 			return true;
 		} else {
 			return false;
@@ -269,4 +327,5 @@ public class SharingLogic {
 
 		throw new IllegalStateException("No dropoff activity found");
 	}
+
 }

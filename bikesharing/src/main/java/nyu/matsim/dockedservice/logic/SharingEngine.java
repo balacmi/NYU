@@ -31,9 +31,11 @@ public class SharingEngine implements ActivityStartEventHandler, MobsimEngine, M
 
 	private boolean vehiclesPlaced = false;
 
+	private final List<MobsimAgent> bookingAgents = new LinkedList<>();
 	private final List<MobsimAgent> pickupAgents = new LinkedList<>();
 	private final List<MobsimAgent> dropoffAgents = new LinkedList<>();
 
+	private final List<MobsimAgent> processBookingAgents = new LinkedList<>();
 	private final List<MobsimAgent> processPickupAgents = new LinkedList<>();
 	private final List<MobsimAgent> processDropoffAgents = new LinkedList<>();
 
@@ -45,7 +47,10 @@ public class SharingEngine implements ActivityStartEventHandler, MobsimEngine, M
 
 	@Override
 	public void handleEvent(ActivityStartEvent event) {
-		if (event.getActType().equals(SharingUtils.PICKUP_ACTIVITY)) {
+		if (event.getActType().equals(SharingUtils.BOOKING_ACTIVITY)) {
+			MobsimAgent agent = internalInterface.getMobsim().getAgents().get(event.getPersonId());
+			bookingAgents.add(agent);
+		} else if (event.getActType().equals(SharingUtils.PICKUP_ACTIVITY)) {
 			MobsimAgent agent = internalInterface.getMobsim().getAgents().get(event.getPersonId());
 			pickupAgents.add(agent);
 		} else if (event.getActType().equals(SharingUtils.DROPOFF_ACTIVITY)) {
@@ -58,10 +63,13 @@ public class SharingEngine implements ActivityStartEventHandler, MobsimEngine, M
 	public void notifyMobsimBeforeSimStep(@SuppressWarnings("rawtypes") MobsimBeforeSimStepEvent e) {
 		processPickupAgents.clear();
 		processDropoffAgents.clear();
+		processBookingAgents.clear();
 
+		processBookingAgents.addAll(bookingAgents);
 		processPickupAgents.addAll(pickupAgents);
 		processDropoffAgents.addAll(dropoffAgents);
 
+		bookingAgents.clear();
 		pickupAgents.clear();
 		dropoffAgents.clear();
 	}
@@ -79,6 +87,12 @@ public class SharingEngine implements ActivityStartEventHandler, MobsimEngine, M
 		}
 
 		List<MobsimAgent> stuckAgents = new LinkedList<>();
+		
+		for (MobsimAgent agent : processBookingAgents) {
+			if (!logic.tryBookVehicle(time, agent)) {
+				stuckAgents.add(agent);
+			}
+		}
 
 		for (MobsimAgent agent : processPickupAgents) {
 			Activity activity = (Activity) WithinDayAgentUtils.getCurrentPlanElement(agent);

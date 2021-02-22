@@ -17,6 +17,7 @@ import nyu.matsim.dockedservice.service.events.SharingPickupEvent;
 import nyu.matsim.dockedservice.service.events.SharingVehicleEvent;
 
 public class SharingUtils {
+	static public final String BOOKING_ACTIVITY = "sharing booking interaction";
 	static public final String PICKUP_ACTIVITY = "sharing pickup interaction";
 	static public final String DROPOFF_ACTIVITY = "sharing dropoff interaction";
 
@@ -40,7 +41,8 @@ public class SharingUtils {
 	}
 
 	static public void setServiceId(Activity activity, Id<SharingService> serviceId) {
-		Verify.verify(activity.getType().equals(PICKUP_ACTIVITY) || activity.getType().equals(DROPOFF_ACTIVITY));
+		Verify.verify(activity.getType().equals(BOOKING_ACTIVITY) || activity.getType().equals(PICKUP_ACTIVITY)
+				|| activity.getType().equals(DROPOFF_ACTIVITY));
 		activity.getAttributes().putAttribute(SERVICE_ID_ATTRIBUTE, serviceId.toString());
 	}
 

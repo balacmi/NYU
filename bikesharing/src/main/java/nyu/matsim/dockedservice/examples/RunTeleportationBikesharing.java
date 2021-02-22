@@ -53,12 +53,12 @@ public class RunTeleportationBikesharing {
 		serviceConfig.setId("velib");
 
 		// ... with freefloating characteristics
-		serviceConfig.setMaximumAccessEgressDistance(1000);
-		serviceConfig.setServiceScheme(ServiceScheme.Freefloating);
+		serviceConfig.setMaximumAccessEgressDistance(100000);
+		serviceConfig.setServiceScheme(ServiceScheme.StationBased);
 		serviceConfig.setServiceAreaShapeFile(null);
 
 		// ... with a number of available vehicles and their initial locations
-		serviceConfig.setServiceInputFile("shared_taxi_vehicles.xml");
+		serviceConfig.setServiceInputFile("shared_taxi_vehicles_stations.xml");
 
 		// ... and, we need to define the underlying mode, here "bike".
 		serviceConfig.setMode("bike");
@@ -77,6 +77,10 @@ public class RunTeleportationBikesharing {
 		ActivityParams dropoffParams = new ActivityParams(SharingUtils.DROPOFF_ACTIVITY);
 		dropoffParams.setScoringThisActivityAtAll(false);
 		config.planCalcScore().addActivityParams(dropoffParams);
+		
+		ActivityParams bookingParams = new ActivityParams(SharingUtils.BOOKING_ACTIVITY);
+		bookingParams.setScoringThisActivityAtAll(false);
+		config.planCalcScore().addActivityParams(bookingParams);
 
 		// We need to score bike
 		ModeParams bikeScoringParams = new ModeParams("bike");
@@ -85,7 +89,7 @@ public class RunTeleportationBikesharing {
 		// Write out all events (DEBUG)
 		config.controler().setWriteEventsInterval(1);
 		config.controler().setWritePlansInterval(1);
-		config.controler().setLastIteration(1);
+		config.controler().setLastIteration(10);
 
 		// Set up controller (no specific settings needed for scenario)
 		Controler controller = new Controler(config);

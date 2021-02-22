@@ -58,6 +58,16 @@ public class SharingRoutingModule implements RoutingModule {
 		if (pickupLinkId.get().equals(dropoffLinkId.get())) {
 			return null;
 		}
+		
+		// Create walk-out-of-building stage
+		List<? extends PlanElement> exitElements = routeAccessEgressStage(fromFacility.getLinkId(),
+				fromFacility.getLinkId(), departureTime, person);
+		allElements.addAll(exitElements);
+		// Create activity where the vehicle is searched for
+		Activity bookActivity = createBookingActivity(departureTime, fromFacility.getLinkId());
+		bookActivity.setStartTime(departureTime);
+		allElements.add(bookActivity);
+		
 
 		// Route pickup stage
 
@@ -119,6 +129,14 @@ public class SharingRoutingModule implements RoutingModule {
 		Facility destinationFacility = new LinkWrapperFacility(network.getLinks().get(destinationId));
 
 		return mainModeRoutingModule.calcRoute(originFacility, destinationFacility, departureTime, person);
+	}
+	
+	private Activity createBookingActivity(double now, Id<Link> linkId) {
+		Activity activity = populationFactory.createActivityFromLinkId(SharingUtils.BOOKING_ACTIVITY, linkId);
+		activity.setStartTime(now);
+		activity.setMaximumDuration(SharingUtils.INTERACTION_DURATION);
+		SharingUtils.setServiceId(activity, serviceId);
+		return activity;
 	}
 
 	private Activity createPickupActivity(double now, Id<Link> linkId) {
