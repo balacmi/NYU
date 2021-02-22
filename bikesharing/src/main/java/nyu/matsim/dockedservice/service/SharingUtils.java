@@ -3,12 +3,18 @@ package nyu.matsim.dockedservice.service;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.contrib.dvrp.run.DvrpModes;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.mobsim.qsim.components.QSimComponentsConfigurator;
 
 import com.google.common.base.Verify;
 
 import nyu.matsim.dockedservice.run.SharingConfigGroup;
 import nyu.matsim.dockedservice.run.SharingServiceConfigGroup;
+import nyu.matsim.dockedservice.service.events.SharingDropoffEvent;
+import nyu.matsim.dockedservice.service.events.SharingFailedDropoffEvent;
+import nyu.matsim.dockedservice.service.events.SharingFailedPickupEvent;
+import nyu.matsim.dockedservice.service.events.SharingPickupEvent;
+import nyu.matsim.dockedservice.service.events.SharingVehicleEvent;
 
 public class SharingUtils {
 	static public final String PICKUP_ACTIVITY = "sharing pickup interaction";
@@ -59,5 +65,13 @@ public class SharingUtils {
 				components.addComponent(DvrpModes.mode(getServiceMode(serviceConfig)));
 			}
 		};
+	}
+
+	public static void addEventMappers(MatsimEventsReader reader) {
+		reader.addCustomEventMapper(SharingVehicleEvent.TYPE, SharingVehicleEvent::convert);
+		reader.addCustomEventMapper(SharingPickupEvent.TYPE, SharingPickupEvent::convert);
+		reader.addCustomEventMapper(SharingFailedPickupEvent.TYPE, SharingFailedPickupEvent::convert);
+		reader.addCustomEventMapper(SharingDropoffEvent.TYPE, SharingDropoffEvent::convert);
+		reader.addCustomEventMapper(SharingFailedDropoffEvent.TYPE, SharingFailedDropoffEvent::convert);
 	}
 }

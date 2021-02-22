@@ -44,11 +44,11 @@ public class SharingServiceWriter extends MatsimXmlWriter {
 				Tuple.of("id", vehicle.getId().toString())));
 
 		if (vehicle.getStartLinkId().isPresent()) {
-			attributes.add(Tuple.of("start_link", vehicle.getStartLinkId().toString()));
+			attributes.add(Tuple.of("start_link", vehicle.getStartLinkId().get().toString()));
 		}
 
 		if (vehicle.getStartStationId().isPresent()) {
-			attributes.add(Tuple.of("start_station", vehicle.getStartStationId().toString()));
+			attributes.add(Tuple.of("start_station", vehicle.getStartStationId().get().toString()));
 		}
 
 		writeStartTag("vehicle", attributes, true);

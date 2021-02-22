@@ -84,6 +84,8 @@ public class RunTeleportationFreefloatingBikesharing {
 
 		// Write out all events (DEBUG)
 		config.controler().setWriteEventsInterval(1);
+		config.controler().setWritePlansInterval(1);
+		config.controler().setLastIteration(1);
 
 		// Set up controller (no specific settings needed for scenario)
 		Controler controller = new Controler(config);

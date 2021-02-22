@@ -18,11 +18,6 @@ public class ImmutableSharingVehicleSpecification implements SharingVehicleSpeci
 		this.id = Objects.requireNonNull(builder.id);
 		this.startLinkId = Optional.ofNullable(builder.startLinkId);
 		this.startStationId = Optional.ofNullable(builder.startStationId);
-
-		if (!(this.startLinkId.isPresent() ^ this.startStationId.isPresent())) {
-			throw new IllegalStateException(
-					"Exactly one of start link or start station must be given for vehicle " + id.toString());
-		}
 	}
 
 	@Override

@@ -5,7 +5,6 @@ public class TODO {
 	 * TODO LIST
 	 * 
 	 * - Scoring (for missed rentals, the rest is done by the mode scorings them themselves!)
-	 * - EventHandlers so people can easily listen to the raised events
 	 * - Writing out the service defintions at the end of the simulation
 	 * - Some basic analysis output
 	 * 

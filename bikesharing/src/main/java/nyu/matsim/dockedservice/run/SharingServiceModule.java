@@ -7,6 +7,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.router.RoutingModule;
 
 import com.google.inject.Singleton;
@@ -66,5 +67,15 @@ public class SharingServiceModule extends AbstractDvrpModeModule {
 		default:
 			throw new IllegalStateException();
 		}
+
+		bindModal(OutputWriter.class).toProvider(modalProvider(getter -> {
+			SharingServiceSpecification specification = getter.getModal(SharingServiceSpecification.class);
+			OutputDirectoryHierarchy outputHierarchy = getter.get(OutputDirectoryHierarchy.class);
+
+			return new OutputWriter(Id.create(serviceConfig.getId(), SharingService.class), specification,
+					outputHierarchy);
+		}));
+
+		addControlerListenerBinding().to(modalKey(OutputWriter.class));
 	}
 }

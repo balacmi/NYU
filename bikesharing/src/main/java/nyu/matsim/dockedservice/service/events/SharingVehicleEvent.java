@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
+import org.matsim.api.core.v01.events.GenericEvent;
 import org.matsim.api.core.v01.events.HasLinkId;
 import org.matsim.api.core.v01.network.Link;
 
@@ -51,5 +52,22 @@ public class SharingVehicleEvent extends Event implements HasLinkId {
 	@Override
 	public String getEventType() {
 		return TYPE;
+	}
+
+	public Id<SharingService> getServiceId() {
+		return serviceId;
+	}
+
+	public Optional<Id<SharingStation>> getStationId() {
+		return stationId;
+	}
+
+	static public SharingVehicleEvent convert(GenericEvent event) {
+		return new SharingVehicleEvent(event.getTime(), //
+				Id.create(event.getAttributes().get("service"), SharingService.class), //
+				Id.createLinkId(event.getAttributes().get("link")), //
+				Id.create(event.getAttributes().get("vehicle"), SharingVehicle.class), //
+				Optional.ofNullable(event.getAttributes().get("station")).map(id -> Id.create(id, SharingStation.class)) //
+		);
 	}
 }
