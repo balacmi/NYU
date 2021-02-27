@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 
 import com.google.common.base.Verify;
 
@@ -24,17 +23,12 @@ public class StationBasedServiceValidator implements SharingServiceValidator {
 
 	@Override
 	public void validate(SharingServiceSpecification specification) {
-		Set<Id<Link>> stationLinkIds = new HashSet<>();
 		Set<Id<SharingStation>> stationIds = new HashSet<>();
 
 		for (SharingStationSpecification station : specification.getStations()) {
 			Verify.verify(!stationIds.contains(station.getId()), "Service %s has duplicate station %s",
 					serviceId.toString(), station.getId().toString());
 
-			Verify.verify(!stationLinkIds.contains(station.getLinkId()), "Service %s has multiple stations on link %s",
-					serviceId.toString(), station.getLinkId().toString());
-
-			stationLinkIds.add(station.getLinkId());
 			stationIds.add(station.getId());
 		}
 
