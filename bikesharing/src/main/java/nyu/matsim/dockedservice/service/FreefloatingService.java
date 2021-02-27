@@ -17,6 +17,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import com.google.common.base.Verify;
 
 import nyu.matsim.dockedservice.io.SharingVehicleSpecification;
+import nyu.matsim.dockedservice.routing.InteractionPoint;
 
 public class FreefloatingService implements SharingService {
 	private final Id<SharingService> serviceId;
@@ -69,7 +70,7 @@ public class FreefloatingService implements SharingService {
 	}
 
 	@Override
-	public Optional<SharingVehicle> findClosestVehicle(MobsimAgent agent) {
+	public Optional<VehicleInteractionPoint> findClosestVehicle(MobsimAgent agent) {
 		Link currentLink = network.getLinks().get(agent.getCurrentLinkId());
 
 		if (availableVehicles.size() == 0) {
@@ -83,26 +84,28 @@ public class FreefloatingService implements SharingService {
 			return Optional.empty();
 		}
 
-		return Optional.of(vehicle);
+		return Optional.of(VehicleInteractionPoint.of(vehicle));
 	}
 
 	@Override
-	public Id<Link> findClosestDropoffLocation(SharingVehicle vehicle, MobsimAgent agent) {
-		return agent.getCurrentLinkId();
+	public InteractionPoint findClosestDropoffLocation(SharingVehicle vehicle, MobsimAgent agent) {
+		return InteractionPoint.of(agent.getCurrentLinkId());
 	}
 
 	@Override
-	public Optional<Id<SharingStation>> getStationId(Id<Link> linkId) {
-		return Optional.empty();
+	public IdMap<SharingVehicle, SharingVehicle> getVehicles() {
+		return vehicles; // TODO: Make this unmodifiable
+	}
+
+	private final static IdMap<SharingStation, SharingStation> EMPTY_STATION_MAP = new IdMap<>(SharingStation.class);
+
+	@Override
+	public IdMap<SharingStation, SharingStation> getStations() {
+		return EMPTY_STATION_MAP; // TODO: Make this unmodifiable
 	}
 
 	@Override
 	public Id<SharingService> getId() {
 		return serviceId;
-	}
-
-	@Override
-	public Collection<SharingVehicle> getVehicles() {
-		return vehicles.values();
 	}
 }

@@ -1,6 +1,5 @@
 package nyu.matsim.dockedservice.service;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +20,7 @@ import com.google.common.base.Verify;
 import nyu.matsim.dockedservice.io.SharingServiceSpecification;
 import nyu.matsim.dockedservice.io.SharingStationSpecification;
 import nyu.matsim.dockedservice.io.SharingVehicleSpecification;
+import nyu.matsim.dockedservice.routing.InteractionPoint;
 
 public class StationBasedService implements SharingService {
 	private final Id<SharingService> serviceId;
@@ -117,7 +117,7 @@ public class StationBasedService implements SharingService {
 	}
 
 	@Override
-	public Optional<SharingVehicle> findClosestVehicle(MobsimAgent agent) {
+	public Optional<VehicleInteractionPoint> findClosestVehicle(MobsimAgent agent) {
 		Link currentLink = network.getLinks().get(agent.getCurrentLinkId());
 
 		if (availableVehicles.size() == 0) {
@@ -131,22 +131,18 @@ public class StationBasedService implements SharingService {
 			return Optional.empty();
 		}
 
-		return Optional.of(vehicle);
+		SharingStation station = vehicleStationMap.get(vehicle.getId());
+		return Optional.of(VehicleInteractionPoint.of(vehicle, station));
 	}
 
 	@Override
-	public Id<Link> findClosestDropoffLocation(SharingVehicle vehicle, MobsimAgent agent) {
+	public InteractionPoint findClosestDropoffLocation(SharingVehicle vehicle, MobsimAgent agent) {
 		Link currentLink = network.getLinks().get(agent.getCurrentLinkId());
 		Verify.verify(availableStations.size() > 0,
 				"It should never happen that no station is available (it means spots < vehicles)");
 
-		return availableStations.getClosest(currentLink.getCoord().getX(), currentLink.getCoord().getY()).getLink()
-				.getId();
-	}
-
-	@Override
-	public Optional<Id<SharingStation>> getStationId(Id<Link> linkId) {
-		return Optional.ofNullable(linkStationMap.get(linkId));
+		return InteractionPoint
+				.of(availableStations.getClosest(currentLink.getCoord().getX(), currentLink.getCoord().getY()));
 	}
 
 	@Override
@@ -155,7 +151,12 @@ public class StationBasedService implements SharingService {
 	}
 
 	@Override
-	public Collection<SharingVehicle> getVehicles() {
-		return vehicles.values();
+	public IdMap<SharingVehicle, SharingVehicle> getVehicles() {
+		return vehicles; // TODO: Make this unmodifiable
+	}
+
+	@Override
+	public IdMap<SharingStation, SharingStation> getStations() {
+		return stations; // TODO: Make this unmodifiable
 	}
 }

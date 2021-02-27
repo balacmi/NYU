@@ -48,17 +48,17 @@ public class SharingRoutingModule implements RoutingModule {
 			Person person) {
 		List<PlanElement> allElements = new LinkedList<>();
 
-		Optional<Id<Link>> pickupLinkId = interactionFinder.findPickup(fromFacility);
-		Optional<Id<Link>> dropoffLinkId = interactionFinder.findDropoff(toFacility);
+		Optional<InteractionPoint> pickupInteraction = interactionFinder.findPickup(fromFacility);
+		Optional<InteractionPoint> dropoffInteraction = interactionFinder.findDropoff(toFacility);
 
-		if (pickupLinkId.isEmpty() || dropoffLinkId.isEmpty()) {
+		if (pickupInteraction.isEmpty() || dropoffInteraction.isEmpty()) {
 			return null;
 		}
 
-		if (pickupLinkId.get().equals(dropoffLinkId.get())) {
+		if (pickupInteraction.get().equals(dropoffInteraction.get())) {
 			return null;
 		}
-		
+
 		// Create walk-out-of-building stage
 		List<? extends PlanElement> exitElements = routeAccessEgressStage(fromFacility.getLinkId(),
 				fromFacility.getLinkId(), departureTime, person);
@@ -67,12 +67,11 @@ public class SharingRoutingModule implements RoutingModule {
 		Activity bookActivity = createBookingActivity(departureTime, fromFacility.getLinkId());
 		bookActivity.setStartTime(departureTime);
 		allElements.add(bookActivity);
-		
 
 		// Route pickup stage
 
 		List<? extends PlanElement> pickupElements = routeAccessEgressStage(fromFacility.getLinkId(),
-				pickupLinkId.get(), departureTime, person);
+				pickupInteraction.get().getLinkId(), departureTime, person);
 		allElements.addAll(pickupElements);
 
 		for (PlanElement planElement : pickupElements) {
@@ -80,7 +79,7 @@ public class SharingRoutingModule implements RoutingModule {
 		}
 
 		// Pickup activity
-		Activity pickupActivity = createPickupActivity(departureTime, pickupLinkId.get());
+		Activity pickupActivity = createPickupActivity(departureTime, pickupInteraction.get());
 		pickupActivity.setStartTime(departureTime);
 		allElements.add(pickupActivity);
 
@@ -88,8 +87,8 @@ public class SharingRoutingModule implements RoutingModule {
 
 		// Route main stage
 
-		List<? extends PlanElement> mainElements = routeMainStage(pickupActivity.getLinkId(), dropoffLinkId.get(),
-				departureTime, person);
+		List<? extends PlanElement> mainElements = routeMainStage(pickupActivity.getLinkId(),
+				dropoffInteraction.get().getLinkId(), departureTime, person);
 		allElements.addAll(mainElements);
 
 		for (PlanElement planElement : pickupElements) {
@@ -97,7 +96,7 @@ public class SharingRoutingModule implements RoutingModule {
 		}
 
 		// Dropoff activity
-		Activity dropoffActivity = createDropoffActivity(departureTime, dropoffLinkId.get());
+		Activity dropoffActivity = createDropoffActivity(departureTime, dropoffInteraction.get());
 		dropoffActivity.setStartTime(departureTime);
 		allElements.add(dropoffActivity);
 
@@ -130,7 +129,7 @@ public class SharingRoutingModule implements RoutingModule {
 
 		return mainModeRoutingModule.calcRoute(originFacility, destinationFacility, departureTime, person);
 	}
-	
+
 	private Activity createBookingActivity(double now, Id<Link> linkId) {
 		Activity activity = populationFactory.createActivityFromLinkId(SharingUtils.BOOKING_ACTIVITY, linkId);
 		activity.setStartTime(now);
@@ -139,19 +138,31 @@ public class SharingRoutingModule implements RoutingModule {
 		return activity;
 	}
 
-	private Activity createPickupActivity(double now, Id<Link> linkId) {
-		Activity activity = populationFactory.createActivityFromLinkId(SharingUtils.PICKUP_ACTIVITY, linkId);
+	private Activity createPickupActivity(double now, InteractionPoint interaction) {
+		Activity activity = populationFactory.createActivityFromLinkId(SharingUtils.PICKUP_ACTIVITY,
+				interaction.getLinkId());
 		activity.setStartTime(now);
 		activity.setMaximumDuration(SharingUtils.INTERACTION_DURATION);
 		SharingUtils.setServiceId(activity, serviceId);
+
+		if (interaction.isStation()) {
+			SharingUtils.setStationId(activity, interaction.getStationId().get());
+		}
+
 		return activity;
 	}
 
-	private Activity createDropoffActivity(double now, Id<Link> linkId) {
-		Activity activity = populationFactory.createActivityFromLinkId(SharingUtils.DROPOFF_ACTIVITY, linkId);
+	private Activity createDropoffActivity(double now, InteractionPoint interaction) {
+		Activity activity = populationFactory.createActivityFromLinkId(SharingUtils.DROPOFF_ACTIVITY,
+				interaction.getLinkId());
 		activity.setStartTime(now);
 		activity.setMaximumDuration(SharingUtils.INTERACTION_DURATION);
 		SharingUtils.setServiceId(activity, serviceId);
+
+		if (interaction.isStation()) {
+			SharingUtils.setStationId(activity, interaction.getStationId().get());
+		}
+
 		return activity;
 	}
 }

@@ -17,7 +17,10 @@ public class SharingServiceWriter extends MatsimXmlWriter {
 
 	public void write(String file) {
 		openFile(file);
+		writeXmlHead();
 		writeDoctype("service", "http://matsim.org/files/dtd/sharing_service_v1.dtd");
+
+		writeStartTag("service", Collections.emptyList());
 
 		writeStartTag("stations", Collections.emptyList());
 		specification.getStations().forEach(this::writeStation);
@@ -26,6 +29,8 @@ public class SharingServiceWriter extends MatsimXmlWriter {
 		writeStartTag("vehicles", Collections.emptyList());
 		specification.getVehicles().forEach(this::writeVehicle);
 		writeEndTag("vehicles");
+
+		writeEndTag("service");
 
 		close();
 	}
@@ -44,11 +49,11 @@ public class SharingServiceWriter extends MatsimXmlWriter {
 				Tuple.of("id", vehicle.getId().toString())));
 
 		if (vehicle.getStartLinkId().isPresent()) {
-			attributes.add(Tuple.of("start_link", vehicle.getStartLinkId().get().toString()));
+			attributes.add(Tuple.of("startLink", vehicle.getStartLinkId().get().toString()));
 		}
 
 		if (vehicle.getStartStationId().isPresent()) {
-			attributes.add(Tuple.of("start_station", vehicle.getStartStationId().get().toString()));
+			attributes.add(Tuple.of("startStation", vehicle.getStartStationId().get().toString()));
 		}
 
 		writeStartTag("vehicle", attributes, true);
