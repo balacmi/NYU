@@ -60,7 +60,7 @@ public class RunCarsharing {
 		// ... with a number of available vehicles and their initial locations
 		serviceConfig.setServiceInputFile("shared_taxi_vehicles_stations.xml");
 
-		// ... and, we need to define the underlying mode, here "bike".
+		// ... and, we need to define the underlying mode, here "car".
 		serviceConfig.setMode("car");
 
 		// Finally, we need to make sure that the service mode (sharing:velib) is
